@@ -10,6 +10,36 @@ this project adheres to
 
 ### Added
 
+- Add a FROST distributed key generation ceremony in `frost/dkg.go`: every
+  participant contributes a VSS commitment and proof of knowledge, verifies
+  every peer's contributions, and finishes with exactly the `DKGShare` the FROST
+  signer consumes. No participant or coordinator ever holds the full key.
+  `DKGTranscript` is the public, independently verifiable record of the
+  ceremony; a participant that aborts or sends a malformed contribution is named
+  in a `*DKGError` and the ceremony fails closed. (#569)
+
+- Add proactive share refresh in `frost/refresh.go`: every participant
+  contributes a zero-constant-term polynomial, so the group verification key and
+  account address are unchanged while every secret share and public key share
+  moves to a new epoch. Old shares cannot be combined with refreshed ones to
+  sign, a missed refresh is named, and a contribution that fails `vss_verify` or
+  changes the constant term is refused. (#570)
+
+- Add signed session transcripts: `SessionTranscript`, `TranscriptRecorder` and
+  `VerifyTranscript`, attached to a `Coordinator` with `WithSessionTranscript`.
+  Every session records its participants, payload hash, rounds, outcome and
+  audit records; failed and aborted sessions record their reason. The
+  coordinator signs the transcript once with Ed25519 and the public key travels
+  inside it, so verification needs no coordinator cooperation. A transcript
+  carries no key share, seed, nonce or signature value. (#572)
+
+- Add `POST /risk` to the verification service and the OpenAPI document: it
+  returns the structural analyzer's findings with their exported, stable `code`s
+  and severities, under the same authentication and concurrency bound as
+  `/verify`. Every report carries the analyzer's note that findings are
+  heuristics, not a safety guarantee. The finding identifiers are now exported
+  as `FindingCode*` constants. (#564)
+
 - Add a structured audit record for every signing decision: `AuditRecord` and
   the `AuditSink` interface, attached with the `WithAudit` option. A record is
   written whether the decision was to sign or to refuse, and an audit write
