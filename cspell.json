@@ -20,6 +20,7 @@
     "pthread",
     "randomises",
     "resharing",
+    "Schnorr",
     "serialises",
     "treerender",
     "uncited",
